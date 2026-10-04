@@ -1,0 +1,55 @@
+# hyp_detect.yaml
+# ──────────────────────────────────────────────────────────────────────────────
+# Training hyperparameters – YOLOv5s Fruit Detection
+# Values taken verbatim from Xie et al. 2024, Section 2.4:
+#   "The confidence thresholds, initial learning rates, and weight decay rates
+#    and optimizers for both were 0.25, 0.01, 0.0005, and SGD, respectively.
+#    After 300 training cycles, both models demonstrated high detection accuracy."
+#
+# Hardware used by the paper: NVIDIA GeForce RTX 4090, 24 GB VRAM
+# Deployment target         : Jetson Xavier NX (TensorRT INT8/FP16)
+# ──────────────────────────────────────────────────────────────────────────────
+
+# ── Core training ─────────────────────────────────────────────────────────────
+epochs:      300          # paper: "After 300 training cycles"
+imgsz:       640          # paper: "training resolutions for YOLOv5s were 640"
+batch:       40           # paper: "batch sizes of 40"
+optimizer:   SGD          # paper: "optimizers … SGD"
+lr0:         0.01         # paper: "initial learning rates … 0.01"
+lrf:         0.01         # final LR = lr0 * lrf  (cosine annealing)
+momentum:    0.937        # SGD momentum (YOLOv5 default)
+weight_decay: 0.0005      # paper: "weight decay rates … 0.0005"
+warmup_epochs:    3.0
+warmup_momentum:  0.8
+warmup_bias_lr:   0.1
+
+# ── Loss weights (YOLOv5 defaults) ────────────────────────────────────────────
+box:   0.05
+cls:   0.5
+cls_pw: 1.0
+obj:   1.0
+obj_pw: 1.0
+iou_t: 0.20
+anchor_t: 4.0
+fl_gamma: 0.0
+
+# ── Augmentation ──────────────────────────────────────────────────────────────
+# Paper collects images under varying lighting: sunny, cloudy, rainy.
+# Standard YOLOv5 augmentation covers this domain shift.
+hsv_h:     0.015     # hue shift       – handles lighting colour cast
+hsv_s:     0.7       # saturation      – ripeness colour variance
+hsv_v:     0.4       # brightness      – sunny/cloudy variance (paper Fig 6c)
+degrees:   10.0      # rotation        – stem tilt variation  (paper Fig 6b)
+translate: 0.1
+scale:     0.5
+shear:     2.0
+perspective: 0.0
+flipud:    0.0
+fliplr:    0.5
+mosaic:    1.0       # mosaic augmentation
+mixup:     0.1
+copy_paste: 0.0
+
+# ── Inference confidence (Section 2.4 & Table 1) ──────────────────────────────
+# conf: 0.25   → set in detection_node.py::YoloDetector.DET_CONF
+# iou:  0.45   → NMS IoU threshold

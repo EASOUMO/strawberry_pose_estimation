@@ -1,0 +1,59 @@
+# hyp_seg.yaml
+# ──────────────────────────────────────────────────────────────────────────────
+# Training hyperparameters – YOLOv5s-seg Stem Segmentation
+# Xie et al. 2024, Section 2.4:
+#   "training resolutions for … YOLOv5s-seg [were] … 320"
+#   "batch sizes of … 60"
+#   "initial learning rates … 0.01, weight decay … 0.0005, optimizer SGD"
+#
+# Key insight from the paper: stem images are collected as the end-effector
+# APPROACHES the target, so the camera view changes from 10 cm to 40 cm.
+# Augmentations simulate this dynamic: blur (motion), scale, brightness.
+# ──────────────────────────────────────────────────────────────────────────────
+
+# ── Core training ─────────────────────────────────────────────────────────────
+epochs:       300
+imgsz:        320          # paper: YOLOv5s-seg trained at 320
+batch:        60           # paper: batch size 60
+optimizer:    SGD
+lr0:          0.01
+lrf:          0.01
+momentum:     0.937
+weight_decay: 0.0005
+warmup_epochs:    3.0
+warmup_momentum:  0.8
+warmup_bias_lr:   0.1
+
+# ── Loss weights ──────────────────────────────────────────────────────────────
+box:    0.05
+cls:    0.5
+cls_pw: 1.0
+obj:    1.0
+obj_pw: 1.0
+iou_t:  0.20
+anchor_t: 4.0
+fl_gamma: 0.0
+
+# ── Augmentation (paper Figure 6: rotation, brightness, motion blur) ──────────
+hsv_h:     0.010     # small hue shift – stem colour is consistent green/brown
+hsv_s:     0.5       # saturation – stem appearance under different lighting
+hsv_v:     0.5       # brightness (paper Fig 6c – brightness adjustment)
+degrees:   30.0      # heavy rotation (paper Fig 6b) – stem tilt is the key feature
+translate: 0.1
+scale:     0.6       # scale change – camera 10–40 cm distance variation
+shear:     5.0
+perspective: 0.0002  # slight perspective – camera angle changes during approach
+flipud:    0.0
+fliplr:    0.5
+mosaic:    0.5       # less mosaic for thin objects (stems)
+mixup:     0.0
+copy_paste: 0.1      # paste stems into new backgrounds
+
+# ── Motion blur ───────────────────────────────────────────────────────────────
+# Paper Figure 6d: motion blur applied to simulate camera movement.
+# Applied via augment_stems.py (offline pre-processing) rather than
+# real-time albumentations, to keep YOLO augmentation pipeline standard.
+# See: training/scripts/augment_stems.py
+
+# ── Inference confidence ──────────────────────────────────────────────────────
+# conf: 0.01  → set in detection_node.py::YoloDetector.SEG_CONF

@@ -1,0 +1,39 @@
+# strawberry_seg.yaml
+# ──────────────────────────────────────────────────────────────────────────────
+# YOLOv5s-seg DATASET CONFIG – Strawberry Stem Segmentation
+# Paper: Xie et al. 2024, Section 2.4
+#   Training set  : 7251 stem images  (collected from monocular camera,
+#                   captured at 10–40 cm from the ridge, multiple angles,
+#                   three lighting conditions: sunny / cloudy / rainy)
+#   Test set      : 200 images
+#   Resolution    : 320 × 320
+#   Precision     : 92.5 %   Recall : 86.6 %   AP@0.5 : 93.4 %
+#
+# NOTE: Stem segmentation requires polygon mask annotations, NOT bounding boxes.
+#       Use Labelme or CVAT with polygon tool; export as YOLO-SEG format.
+#       Format per line: <class> <x1> <y1> <x2> <y2> ... (normalised [0,1])
+# ──────────────────────────────────────────────────────────────────────────────
+
+path: /home/users/esoumo/HarvestBot/src/strawberry_perception/training/data/strawberry_seg
+
+# All 3 datasets combined for training
+train:
+  - train/images
+  - train1/images
+  - train2/images
+
+val:  val/images    # created by: python split_datasets.py
+test: test/images   # created by: python split_datasets.py
+
+# Classes (match the polygon annotation labels in all 3 datasets)
+nc: 2
+names:
+  0: peduncle    # stem / peduncle of the strawberry  ← primary harvest target
+  1: strawberry  # fruit body (used for context, not cutting)
+
+# ── Annotation guide ─────────────────────────────────────────────────────────
+# Annotate ONLY the stem/peduncle from the calyx (fruit attachment point)
+# upward to where the stem enters the leaf canopy.
+# The picking point will be the 30th pixel from the BOTTOM of the segmented
+# mask midline (see stem_localizer.py).
+# ─────────────────────────────────────────────────────────────────────────────

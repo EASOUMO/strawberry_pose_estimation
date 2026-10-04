@@ -1,0 +1,26 @@
+# strawberry_detect.yaml
+# ──────────────────────────────────────────────────────────────────────────────
+# YOLOv5s DATASET CONFIG – Ripe Strawberry Detection
+# Paper: Xie et al. 2024, Section 2.4
+#   Training set  : 2152 fruit images
+#   Test set      : 200 images
+#   Resolution    : 640 × 640
+#   Precision     : 97.6 %   Recall : 93.7 %   AP@0.5 : 98.0 %
+# ──────────────────────────────────────────────────────────────────────────────
+
+path: /home/users/esoumo/HarvestBot/src/strawberry_perception/training/data/strawberry_detect        # root dataset directory (relative to this file)
+train: train/images                    # training images
+val:   val/images                      # validation images
+test:  test/images                     # test images (optional)
+
+# Classes
+# Actual Roboflow export uses a single 'strawberry' class (all labels are class 0).
+# Update nc and names here if you relabel with ripe/unripe distinction.
+nc: 1
+names:
+  0: strawberry
+
+# ── Dataset sources (see training/DATASETS.md for download instructions) ──────
+# Primary  : Roboflow Universe "Strawberry Ripeness Detection"
+# Secondary: OpenImages v7  (class: Strawberry)
+# Augment  : Your own RealSense D435i field captures

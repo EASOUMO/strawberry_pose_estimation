@@ -1,0 +1,13 @@
+train: train1/images
+val:   val/images
+test:  test/images
+
+nc: 2
+names: ['peduncle', 'strawberry']
+
+roboflow:
+  workspace: soumo-emmanuel-arnaud
+  project: soumo-emmanuel-arnaud
+  version: dataset
+  license: Private
+  url: https://app.roboflow.com/soumo-emmanuel-arnaud/soumo-emmanuel-arnaud/dataset
