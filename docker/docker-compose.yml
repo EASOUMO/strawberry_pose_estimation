@@ -1,0 +1,82 @@
+services:
+  mocap-sensor-rig:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      network: host
+      additional_contexts:
+        rs_sdk: /usr/local
+    image: mcap-sensor-rig
+
+    logging:
+      driver: journald
+      options:
+        tag: mocap-rig
+    init: true
+    stop_grace_period: 60s
+
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+    network_mode: host
+    mem_limit: 24g
+    ipc: host
+
+    privileged: true
+    gpus: all
+
+    device_cgroup_rules:
+      - "c 189:* rwm" # all USB bus devices (read/write/mknod)
+      - "c 81:* rwm" # video4linux (major 81)
+      - "c 13:* rwm" # input devices
+
+    group_add:
+      - plugdev
+      - video
+      - dialout
+
+    volumes:
+      - ../realsense_ros2:/home/ubuntu/base_ws/src/realsense_ros2:rw
+      - ../vicon_ros/:/home/ubuntu/base_ws/src/vicon_ros:rw
+      - ../strawberry_pose_estimation/:/home/ubuntu/base_ws/src/strawberry_pose_estimation:rw
+      - ../bash_scripts/container:/home/ubuntu/bash_scripts:rw
+      - ../config:/home/ubuntu/config:rw
+
+      # X11 forwarding
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${HOME}/.Xauthority:/home/ubuntu/.Xauthority:ro
+
+      # RealSense SDK (host-installed libs).
+      # NOTE: do NOT bind-mount /usr/local/lib here. The image already contains
+      # the SDK (Dockerfile: COPY --from=rs_sdk ... /usr/local/lib), and mounting
+      # the host's /usr/local/lib over it also masks
+      # /usr/local/lib/python3.12/dist-packages, hiding every pip-installed
+      # package (torch, ultralytics, opencv, setuptools, ...) at runtime.
+      - /usr/local/include:/usr/local/include:ro
+      - /usr/local/share/realsense2:/usr/local/share/realsense2:ro
+      - /usr/local/bin:/usr/local/bin:ro
+
+      # USB device tree — bind-mount as a volume (NOT devices: section)
+      - /dev/bus/usb:/dev/bus/usb:rw
+      - /sys/bus/usb:/sys/bus/usb:ro
+      - /dev/video:/dev/video:rw
+      - /dev/input:/dev/input:rw
+
+      # Tmux config
+      - ./tmux.conf:/home/ubuntu/.tmux.conf:ro
+
+    environment:
+      - BASE_WS=/home/ubuntu/base_ws
+      - SENSOR_CONFIG_DIR=/home/ubuntu/config
+      - DISPLAY=${DISPLAY:-:0}
+      - XAUTHORITY=/home/ubuntu/.Xauthority
+      - QT_X11_NO_MITSHM=1
+      - MAKEFLAGS=-j1
+      - CC=/usr/bin/gcc-13
+      - CXX=/usr/bin/g++-13
+
+      # Work around GCC 12 ICE: "double free or corruption during GIMPLE pass: fre"
+      - CXXFLAGS=-fno-tree-fre
+      - CFLAGS=-fno-tree-fre
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics,video

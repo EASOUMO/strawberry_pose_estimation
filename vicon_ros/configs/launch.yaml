@@ -1,0 +1,20 @@
+session: vicon
+# init_cmd: |
+#   #exec /bin/bash
+#   cd @TMULE_CONFIG_DIR@ || true
+#   set -o pipefail
+#   function export_default () {
+#     var_name="$1"
+#     var_default="$2"
+#     eval $var_name="${!var_name:-$var_default}"
+#     export $var_name
+#     echo "  $0 -> $var_name=${!var_name}"
+#   }
+
+windows:
+  - name: vicon_node
+    panes:
+      - ros2 launch vicon_receiver markers.launch.py
+  - name: rviz2
+    panes:
+      - rviz2 -d /home/ros/configs/vicon.rviz
